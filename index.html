@@ -39,6 +39,7 @@ button:hover {
     margin: 15px auto;
     border-radius: 10px;
     width: 90%;
+    text-align: left;
 }
 
 .hidden {
@@ -52,6 +53,10 @@ input {
     border: none;
     margin: 10px;
     width: 80%;
+}
+.highlight {
+    color: #ff6a00;
+    font-weight: bold;
 }
 </style>
 </head>
@@ -73,6 +78,7 @@ input {
 <div id="sponsorSelection" class="hidden">
     <div class="card">
         <h2>Elige un sponsor</h2>
+        <p>Dinero disponible: <span id="currentMoneySponsor">€0</span></p>
         <button onclick="chooseSponsor('RedBull')">RedBull (€1.200.000)</button>
         <button onclick="chooseSponsor('Monster')">Monster (€900.000)</button>
         <button onclick="chooseSponsor('Pull&Bear')">Pull&Bear (€700.000)</button>
@@ -83,6 +89,8 @@ input {
 <div id="bikeSelection" class="hidden">
     <div class="card">
         <h2>Elige una moto</h2>
+        <p>Dinero disponible: <span id="currentMoneyBike">€0</span></p>
+        <div id="bikeStats"></div>
         <button onclick="chooseBike('Ducati')">Ducati</button>
         <button onclick="chooseBike('Aprilia')">Aprilia</button>
         <button onclick="chooseBike('KTM')">KTM</button>
@@ -94,9 +102,11 @@ input {
 <div id="pilotSelection" class="hidden">
     <div class="card">
         <h2>Elige 2 pilotos</h2>
+        <p>Dinero disponible: <span id="currentMoneyPilot">€0</span></p>
         <p>Piloto elegido 1: <span id="pilot1Name">-</span></p>
         <p>Piloto elegido 2: <span id="pilot2Name">-</span></p>
         <div id="pilotButtons"></div>
+        <div id="pilotStats"></div>
     </div>
 </div>
 
@@ -113,15 +123,15 @@ input {
     <button onclick="simulateRace()">Simular Carrera</button>
 
     <div class="card">
-        <h2>Resultado</h2>
-        <p id="result"></p>
+        <h2>Resultados de la carrera</h2>
+        <pre id="result"></pre>
     </div>
 
 </div>
 
 <script>
 
-// === Variables del juego ===
+// Variables
 let teamName = "";
 let money = 0;
 let race = 1;
@@ -162,13 +172,14 @@ const pilotsList = [
 let bikeChosen = null;
 let pilotsChosen = [];
 
-// === Funciones de Setup ===
+// Funciones setup
 function chooseTeamName() {
     let input = document.getElementById("teamNameInput").value.trim();
     if(input === "") { alert("Escribe un nombre válido"); return; }
     teamName = input;
     document.getElementById("setup").classList.add("hidden");
     document.getElementById("sponsorSelection").classList.remove("hidden");
+    document.getElementById("currentMoneySponsor").innerText = "€0";
 }
 
 function chooseSponsor(name) {
@@ -176,21 +187,34 @@ function chooseSponsor(name) {
     money = sponsors[name];
     document.getElementById("sponsorSelection").classList.add("hidden");
     document.getElementById("bikeSelection").classList.remove("hidden");
+    document.getElementById("currentMoneyBike").innerText = "€" + money;
 }
 
 function chooseBike(name) {
-    bikeChosen = bikes[name];
+    bikeChosen = {...bikes[name], name: name};
     if(money < bikeChosen.price){
         alert("No tienes suficiente dinero para esta moto!");
         return;
     }
     money -= bikeChosen.price;
-    document.getElementById("bikeSelection").classList.add("hidden");
+    document.getElementById("currentMoneyBike").innerText = "€" + money;
+    showBikeStats();
     setupPilotSelection();
 }
 
+function showBikeStats() {
+    document.getElementById("bikeStats").innerHTML = `
+        <p><strong>${bikeChosen.name}</strong> - Stats:</p>
+        <p>Potencia: ${bikeChosen.power} | Aceleración: ${bikeChosen.acceleration} | Manejabilidad: ${bikeChosen.handling} | Fiabilidad: ${bikeChosen.reliability}</p>
+        <p>Precio: €${bikeChosen.price}</p>
+    `;
+}
+
 function setupPilotSelection() {
+    document.getElementById("bikeSelection").classList.add("hidden");
     document.getElementById("pilotSelection").classList.remove("hidden");
+    document.getElementById("currentMoneyPilot").innerText = "€" + money;
+
     let container = document.getElementById("pilotButtons");
     container.innerHTML = "";
     pilotsList.forEach((pilot,i)=>{
@@ -212,7 +236,11 @@ function choosePilot(index) {
         return;
     }
     money -= pilot.salary;
-    pilotsChosen.push(pilot);
+    pilotsChosen.push({...pilot});
+    document.getElementById("currentMoneyPilot").innerText = "€" + money;
+
+    showPilotStats(pilot);
+
     if(pilotsChosen.length === 1) document.getElementById("pilot1Name").innerText = pilot.name;
     else document.getElementById("pilot2Name").innerText = pilot.name;
 
@@ -222,7 +250,14 @@ function choosePilot(index) {
     }
 }
 
-// === Funciones de juego ===
+function showPilotStats(pilot){
+    document.getElementById("pilotStats").innerHTML = `
+        <p><strong>${pilot.name}</strong> - Stats:</p>
+        <p>Talento: ${pilot.talent} | Consistencia: ${pilot.consistency} | Sueldo: €${pilot.salary}</p>
+    `;
+}
+
+// Juego
 function startGame() {
     document.getElementById("game").classList.remove("hidden");
     updateUI();
@@ -232,28 +267,44 @@ function updateUI() {
     document.getElementById("teamName").innerText = teamName;
     document.getElementById("money").innerText = "Dinero restante: €" + money;
     document.getElementById("pilotInfo").innerText = "Pilotos: " + pilotsChosen.map(p=>p.name).join(", ");
-    document.getElementById("bikeInfo").innerText = "Moto: " + Object.keys(bikes).find(k=>bikes[k]===bikeChosen);
+    document.getElementById("bikeInfo").innerText = "Moto: " + bikeChosen.name;
     document.getElementById("raceNumber").innerText = "Carrera: " + race + "/" + maxRaces;
 }
 
 function simulateRace() {
     let results = [];
+
+    // Simulamos tus pilotos
     pilotsChosen.forEach(pilot=>{
-        let randomFactor = Math.floor(Math.random()*21)-10; // -10 a +10
+        let randomFactor = Math.floor(Math.random()*31)-15; // -15 a +15
         let performance = (pilot.talent*0.4) + (pilot.consistency*0.2) + (bikeChosen.power*0.3) + (bikeChosen.reliability*0.1) + randomFactor;
-        results.push({name:pilot.name, performance});
+        results.push({name:pilot.name, performance, isUser:true});
     });
 
-    // ordenar de mayor a menor
+    // Simulamos pilotos rivales (otros pilotos que no elegiste)
+    pilotsList.forEach(pilot=>{
+        if(!pilotsChosen.some(p=>p.name===pilot.name)){
+            let randomFactor = Math.floor(Math.random()*31)-15;
+            let performance = (pilot.talent*0.4) + (pilot.consistency*0.2) + (80*0.3) + (75*0.1) + randomFactor; // moto rival estándar
+            results.push({name:pilot.name, performance, isUser:false});
+        }
+    });
+
+    // Ordenar de mayor a menor
     results.sort((a,b)=>b.performance - a.performance);
 
-    let output = "Resultados:\n";
+    // Generar resultados
+    let output = "";
     results.forEach((r,i)=>{
         let earnings = 0;
-        if(i===0) earnings=200000;
-        else earnings=100000;
-        money += earnings;
-        output += (i+1) + "º " + r.name + " (€" + earnings + ")\n";
+        if(r.isUser){
+            if(i===0) earnings=200000;
+            else if(i<=2) earnings=120000;
+            else earnings=60000;
+            money += earnings;
+        }
+        let mark = r.isUser ? "🔥 " : "";
+        output += (i+1) + "º " + mark + r.name + " (€" + earnings + ")\n";
     });
 
     document.getElementById("result").innerText = output;
