@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motoracing Manager</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: white;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    color: #ff3c00;
+}
+
+button {
+    background: #ff3c00;
+    color: white;
+    border: none;
+    padding: 12px;
+    margin: 10px;
+    width: 80%;
+    font-size: 16px;
+    border-radius: 8px;
+}
+
+button:hover {
+    background: #ff6a00;
+}
+
+.card {
+    background: #222;
+    padding: 15px;
+    margin: 15px auto;
+    border-radius: 10px;
+    width: 90%;
+}
+
+.hidden {
+    display: none;
+}
+
+</style>
+</head>
+<body>
+
+<h1>🏁 Motoracing Manager</h1>
+
+<div id="menu">
+    <button onclick="startGame()">Comenzar Temporada</button>
+</div>
+
+<div id="game" class="hidden">
+
+    <div class="card">
+        <h2>Tu Equipo</h2>
+        <p id="money"></p>
+        <p id="pilot"></p>
+        <p id="bike"></p>
+        <p id="raceNumber"></p>
+    </div>
+
+    <button onclick="simulateRace()">Simular Carrera</button>
+
+    <div class="card">
+        <h2>Resultado</h2>
+        <p id="result"></p>
+    </div>
+
+</div>
+
+<script>
+
+let money = 1000000;
+let race = 1;
+
+let pilot = {
+    name: "Alex Torres",
+    talent: 80,
+    consistency: 75
+};
+
+let bike = {
+    brand: "Falcon GP",
+    power: 78,
+    reliability: 70
+};
+
+function startGame() {
+    document.getElementById("menu").classList.add("hidden");
+    document.getElementById("game").classList.remove("hidden");
+    updateUI();
+}
+
+function updateUI() {
+    document.getElementById("money").innerText = "Dinero: €" + money;
+    document.getElementById("pilot").innerText = 
+        "Piloto: " + pilot.name + 
+        " | Talento: " + pilot.talent + 
+        " | Consistencia: " + pilot.consistency;
+
+    document.getElementById("bike").innerText = 
+        "Moto: " + bike.brand + 
+        " | Potencia: " + bike.power + 
+        " | Fiabilidad: " + bike.reliability;
+
+    document.getElementById("raceNumber").innerText = "Carrera: " + race + "/10";
+}
+
+function simulateRace() {
+
+    let randomFactor = Math.floor(Math.random() * 21) - 10;
+
+    let performance = 
+        (pilot.talent * 0.4) +
+        (pilot.consistency * 0.2) +
+        (bike.power * 0.3) +
+        (bike.reliability * 0.1) +
+        randomFactor;
+
+    let position;
+
+    if (performance > 85) position = 1;
+    else if (performance > 78) position = 3;
+    else if (performance > 70) position = 5;
+    else if (performance > 60) position = 8;
+    else position = 12;
+
+    let earnings = 0;
+
+    if (position === 1) earnings = 200000;
+    else if (position <= 3) earnings = 120000;
+    else if (position <= 5) earnings = 60000;
+    else earnings = 20000;
+
+    money += earnings;
+
+    document.getElementById("result").innerText =
+        "Terminaste en posición " + position +
+        ". Ganaste €" + earnings;
+
+    race++;
+
+    if (race > 10) {
+        alert("Temporada finalizada!");
+        race = 1;
+        money = 1000000;
+    }
+
+    updateUI();
+}
+
+</script>
+
+</body>
+</html>
