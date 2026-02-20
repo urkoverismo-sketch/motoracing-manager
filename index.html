@@ -4,250 +4,257 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Motoracing Manager</title>
+
 <style>
 body {font-family: Arial; background:#111; color:white; text-align:center; padding:20px;}
 h1 {color:#ff3c00;}
-button {background:#ff3c00;color:white;border:none;padding:12px;margin:5px;font-size:16px;border-radius:8px;}
+button {background:#ff3c00;color:white;border:none;padding:12px;margin:5px;font-size:14px;border-radius:8px;cursor:pointer;}
 button:hover {background:#ff6a00;}
-.card {background:#222;padding:15px;margin:15px auto;border-radius:10px;width:90%;text-align:left;}
+.card {background:#222;padding:15px;margin:15px auto;border-radius:10px;width:95%;max-width:600px;text-align:left;}
 .hidden {display:none;}
 input {padding:10px;font-size:16px;border-radius:8px;border:none;margin:10px;width:80%;}
-.highlight {color:#ff6a00;font-weight:bold;}
 pre {white-space: pre-wrap;}
+.highlight {color:#ff6a00;font-weight:bold;}
 </style>
 </head>
 <body>
 
 <h1>🏁 Motoracing Manager</h1>
 
-<div id="setup">
-  <div class="card">
-    <h2>Nombre de tu equipo</h2>
-    <input type="text" id="teamNameInput" placeholder="Escribe el nombre de tu equipo">
-    <br><button onclick="chooseTeamName()">Confirmar nombre</button>
-  </div>
+<div id="setup" class="card">
+<h2>Nombre de tu equipo</h2>
+<input type="text" id="teamNameInput" placeholder="Escribe el nombre de tu equipo">
+<br>
+<button onclick="chooseTeamName()">Confirmar</button>
 </div>
 
-<div id="sponsorSelection" class="hidden">
-  <div class="card">
-    <h2>Elige un sponsor</h2>
-    <p>Dinero disponible: <span id="currentMoneySponsor">€0</span></p>
-    <button onclick="chooseSponsor('RedBull')">RedBull (€1.200.000)</button>
-    <button onclick="chooseSponsor('Monster')">Monster (€900.000)</button>
-    <button onclick="chooseSponsor('Pull&Bear')">Pull&Bear (€700.000)</button>
-    <button onclick="chooseSponsor('GoPro')">GoPro (€500.000)</button>
-  </div>
+<div id="sponsorSelection" class="card hidden">
+<h2>Elige Sponsor</h2>
+<p>Dinero disponible: <span id="moneySponsor"></span></p>
+<button onclick="chooseSponsor('RedBull')">RedBull (€1.200.000)</button>
+<button onclick="chooseSponsor('Monster')">Monster (€900.000)</button>
+<button onclick="chooseSponsor('Pull&Bear')">Pull&Bear (€700.000)</button>
+<button onclick="chooseSponsor('GoPro')">GoPro (€500.000)</button>
 </div>
 
-<div id="bikeSelection" class="hidden">
-  <div class="card">
-    <h2>Elige una moto</h2>
-    <p>Dinero disponible: <span id="currentMoneyBike">€0</span></p>
-    <div id="bikeStats"></div>
-    <button onclick="chooseBike('Ducati')">Ducati</button>
-    <button onclick="chooseBike('Aprilia')">Aprilia</button>
-    <button onclick="chooseBike('KTM')">KTM</button>
-    <button onclick="chooseBike('Yamaha')">Yamaha</button>
-    <button onclick="chooseBike('Honda')">Honda</button>
-  </div>
+<div id="bikeSelection" class="card hidden">
+<h2>Elige Moto</h2>
+<p>Dinero disponible: <span id="moneyBike"></span></p>
+<div id="bikeStats"></div>
+<button onclick="chooseBike('Ducati')">Ducati</button>
+<button onclick="chooseBike('Aprilia')">Aprilia</button>
+<button onclick="chooseBike('KTM')">KTM</button>
+<button onclick="chooseBike('Yamaha')">Yamaha</button>
+<button onclick="chooseBike('Honda')">Honda</button>
 </div>
 
-<div id="pilotSelection" class="hidden">
-  <div class="card">
-    <h2>Elige 2 pilotos</h2>
-    <p>Dinero disponible: <span id="currentMoneyPilot">€0</span></p>
-    <p>Piloto elegido 1: <span id="pilot1Name">-</span></p>
-    <p>Piloto elegido 2: <span id="pilot2Name">-</span></p>
-    <div id="pilotButtons"></div>
-    <div id="pilotStats"></div>
-  </div>
+<div id="pilotSelection" class="card hidden">
+<h2>Elige 2 Pilotos</h2>
+<p>Dinero disponible: <span id="moneyPilot"></span></p>
+<div id="pilotButtons"></div>
+<div id="pilotStats"></div>
 </div>
 
 <div id="game" class="hidden">
-  <div class="card">
-    <h2>Tu Equipo: <span id="teamName"></span></h2>
-    <p id="money"></p>
-    <p id="pilotInfo"></p>
-    <p id="bikeInfo"></p>
-    <p id="raceNumber"></p>
-  </div>
 
-  <button onclick="simulateRace()">Simular Carrera</button>
-  <button onclick="showChampionship()">Mostrar Clasificación</button>
+<div class="card">
+<h2 id="teamTitle"></h2>
+<p id="raceInfo"></p>
+<p id="teamInfo"></p>
+</div>
 
-  <div class="card">
-    <h2>Resultados de la carrera</h2>
-    <pre id="result"></pre>
-  </div>
+<button onclick="simulateRace()">Simular Carrera</button>
+<button onclick="showChampionship()">Ver Clasificación</button>
+
+<div class="card">
+<h2>Resultados</h2>
+<pre id="results"></pre>
+</div>
+
 </div>
 
 <script>
-// Variables
-let teamName = "";
-let money = 0;
-let race = 1;
-let maxRaces = 10;
-let sponsorChosen = "";
+
+// ===== DATOS =====
 
 const sponsors = {
-  "RedBull":1200000,"Monster":900000,"Pull&Bear":700000,"GoPro":500000
+RedBull:1200000,
+Monster:900000,
+"Pull&Bear":700000,
+GoPro:500000
 };
 
 const bikes = {
-  "Ducati": {power:90, acceleration:85, handling:70, reliability:75, price:300000},
-  "Aprilia": {power:85, acceleration:80, handling:75, reliability:80, price:280000},
-  "KTM": {power:80, acceleration:90, handling:65, reliability:70, price:250000},
-  "Yamaha": {power:88, acceleration:82, handling:78, reliability:78, price:290000},
-  "Honda": {power:87, acceleration:83, handling:76, reliability:80, price:290000}
+Ducati:{power:92,acceleration:88,handling:75,reliability:80,price:300000},
+Aprilia:{power:88,acceleration:85,handling:80,reliability:82,price:280000},
+KTM:{power:86,acceleration:90,handling:70,reliability:75,price:260000},
+Yamaha:{power:89,acceleration:84,handling:82,reliability:83,price:290000},
+Honda:{power:87,acceleration:83,handling:78,reliability:80,price:270000}
 };
 
 const pilotsList = [
-{name:"Pecco Bagnaia", talent:90, consistency:85, salary:400000, points:0},
-{name:"Marc Márquez", talent:95, consistency:88, salary:500000, points:0},
-{name:"Jorge Martín", talent:85, consistency:80, salary:350000, points:0},
-{name:"Marco Bezzecchi", talent:80, consistency:78, salary:300000, points:0},
-{name:"Brad Binder", talent:82, consistency:75, salary:280000, points:0},
-{name:"Pedro Acosta", talent:88, consistency:82, salary:360000, points:0},
-{name:"Fabio Quartararo", talent:92, consistency:86, salary:450000, points:0},
-{name:"Álex Rins", talent:87, consistency:83, salary:370000, points:0},
-{name:"Joan Mir", talent:85, consistency:80, salary:350000, points:0},
-{name:"Luca Marini", talent:80, consistency:75, salary:300000, points:0},
-{name:"Jack Miller", talent:88, consistency:84, salary:400000, points:0},
-{name:"Toprak Razgatlıoğlu", talent:90, consistency:82, salary:380000, points:0}
+{name:"Pecco Bagnaia",talent:90,consistency:85,salary:400000,points:0},
+{name:"Marc Márquez",talent:95,consistency:88,salary:500000,points:0},
+{name:"Jorge Martín",talent:92,consistency:86,salary:450000,points:0},
+{name:"Marco Bezzecchi",talent:85,consistency:82,salary:350000,points:0},
+{name:"Brad Binder",talent:84,consistency:80,salary:330000,points:0},
+{name:"Pedro Acosta",talent:91,consistency:84,salary:420000,points:0},
+{name:"Fabio Quartararo",talent:93,consistency:87,salary:470000,points:0},
+{name:"Álex Rins",talent:88,consistency:83,salary:360000,points:0},
+{name:"Joan Mir",talent:87,consistency:82,salary:350000,points:0},
+{name:"Luca Marini",talent:82,consistency:78,salary:300000,points:0},
+{name:"Jack Miller",talent:86,consistency:80,salary:340000,points:0},
+{name:"Toprak Razgatlıoğlu",talent:89,consistency:83,salary:380000,points:0},
+{name:"Maverick Viñales",talent:90,consistency:84,salary:400000,points:0},
+{name:"Enea Bastianini",talent:88,consistency:83,salary:360000,points:0},
+{name:"Álex Márquez",talent:85,consistency:80,salary:330000,points:0},
+{name:"Fermín Aldeguer",talent:83,consistency:78,salary:280000,points:0},
+{name:"Fabio Di Giannantonio",talent:84,consistency:79,salary:290000,points:0},
+{name:"Franco Morbidelli",talent:86,consistency:81,salary:340000,points:0},
+{name:"Raúl Fernández",talent:82,consistency:77,salary:270000,points:0},
+{name:"Ai Ogura",talent:80,consistency:76,salary:250000,points:0},
+{name:"Johann Zarco",talent:87,consistency:82,salary:350000,points:0},
+{name:"Diogo Moreira",talent:79,consistency:75,salary:240000,points:0}
 ];
 
-let bikeChosen = null;
-let pilotsChosen = [];
+const circuits = [
+"GP de Tailandia","GP de Brasil","GP de las Américas","GP de Qatar",
+"GP de España","GP de Francia","GP de Catalunya","GP de Italia",
+"GP de Hungría","GP de la República Checa","GP de los Países Bajos",
+"GP de Alemania","GP de Gran Bretaña","GP de Aragón","GP de San Marino",
+"GP de Austria","GP de Japón","GP de Indonesia","GP de Australia",
+"GP de Malasia","GP de Portugal","GP de la Comunidad Valenciana"
+];
 
-// Setup functions
+const pointsTable=[25,20,16,13,11,10,9,8,7,6,5,4,3,2,1];
+
+// ===== VARIABLES =====
+
+let money=0;
+let teamName="";
+let bikeChosen=null;
+let pilotsChosen=[];
+let race=1;
+
+// ===== FUNCIONES =====
+
 function chooseTeamName(){
-  let input = document.getElementById("teamNameInput").value.trim();
-  if(!input){alert("Escribe un nombre válido"); return;}
-  teamName = input;
-  document.getElementById("setup").classList.add("hidden");
-  document.getElementById("sponsorSelection").classList.remove("hidden");
+teamName=document.getElementById("teamNameInput").value;
+if(!teamName) return alert("Pon un nombre válido");
+document.getElementById("setup").classList.add("hidden");
+document.getElementById("sponsorSelection").classList.remove("hidden");
 }
 
 function chooseSponsor(name){
-  sponsorChosen = name;
-  money = sponsors[name];
-  document.getElementById("currentMoneyBike").innerText = "€"+money;
-  document.getElementById("sponsorSelection").classList.add("hidden");
-  document.getElementById("bikeSelection").classList.remove("hidden");
+money=sponsors[name];
+document.getElementById("moneyBike").innerText="€"+money;
+document.getElementById("sponsorSelection").classList.add("hidden");
+document.getElementById("bikeSelection").classList.remove("hidden");
 }
 
 function chooseBike(name){
-  bikeChosen = {...bikes[name], name:name};
-  if(money < bikeChosen.price){alert("No tienes suficiente dinero para esta moto!"); return;}
-  money -= bikeChosen.price;
-  document.getElementById("currentMoneyBike").innerText = "€"+money;
-  showBikeStats();
-  setupPilotSelection();
+let bike=bikes[name];
+if(money<bike.price) return alert("No tienes suficiente dinero");
+money-=bike.price;
+bikeChosen={...bike,name};
+document.getElementById("bikeStats").innerHTML=
+`<p><strong>${name}</strong></p>
+Potencia:${bike.power} | Aceleración:${bike.acceleration} | 
+Manejo:${bike.handling} | Fiabilidad:${bike.reliability} | 
+Precio:€${bike.price}`;
+document.getElementById("moneyPilot").innerText="€"+money;
+document.getElementById("bikeSelection").classList.add("hidden");
+document.getElementById("pilotSelection").classList.remove("hidden");
+loadPilots();
 }
 
-function showBikeStats(){
-  document.getElementById("bikeStats").innerHTML = `
-    <p><strong>${bikeChosen.name}</strong> - Stats:</p>
-    <p>Potencia: ${bikeChosen.power} | Aceleración: ${bikeChosen.acceleration} | Manejabilidad: ${bikeChosen.handling} | Fiabilidad: ${bikeChosen.reliability}</p>
-    <p>Precio: €${bikeChosen.price}</p>
-  `;
-}
-
-function setupPilotSelection(){
-  document.getElementById("bikeSelection").classList.add("hidden");
-  document.getElementById("pilotSelection").classList.remove("hidden");
-  document.getElementById("currentMoneyPilot").innerText = "€"+money;
-
-  let container = document.getElementById("pilotButtons");
-  container.innerHTML = "";
-  pilotsList.forEach((pilot,i)=>{
-    let btn = document.createElement("button");
-    btn.innerText = pilot.name + " (€"+pilot.salary+")";
-    btn.onclick = ()=>choosePilot(i);
-    container.appendChild(btn);
-  });
+function loadPilots(){
+let container=document.getElementById("pilotButtons");
+container.innerHTML="";
+pilotsList.forEach((p,i)=>{
+let btn=document.createElement("button");
+btn.innerText=p.name+" (€"+p.salary+")";
+btn.onclick=()=>choosePilot(i);
+container.appendChild(btn);
+});
 }
 
 function choosePilot(index){
-  let pilot = pilotsList[index];
-  if(pilotsChosen.length>=2){alert("Ya has elegido 2 pilotos"); return;}
-  if(money < pilot.salary){alert("No tienes suficiente dinero para este piloto"); return;}
-  money -= pilot.salary;
-  pilotsChosen.push({...pilot});
-  document.getElementById("currentMoneyPilot").innerText = "€"+money;
-
-  showPilotStats(pilot);
-  if(pilotsChosen.length===1) document.getElementById("pilot1Name").innerText = pilot.name;
-  else document.getElementById("pilot2Name").innerText = pilot.name;
-
-  if(pilotsChosen.length===2){
-    document.getElementById("pilotSelection").classList.add("hidden");
-    startGame();
-  }
+let p=pilotsList[index];
+if(pilotsChosen.length>=2) return alert("Ya tienes 2 pilotos");
+if(money<p.salary) return alert("No tienes dinero suficiente");
+money-=p.salary;
+pilotsChosen.push(p);
+document.getElementById("moneyPilot").innerText="€"+money;
+document.getElementById("pilotStats").innerHTML=
+`<p><strong>${p.name}</strong></p>
+Talento:${p.talent} | Consistencia:${p.consistency}`;
+if(pilotsChosen.length===2) startGame();
 }
 
-function showPilotStats(pilot){
-  document.getElementById("pilotStats").innerHTML = `
-    <p><strong>${pilot.name}</strong> - Stats:</p>
-    <p>Talento: ${pilot.talent} | Consistencia: ${pilot.consistency} | Sueldo: €${pilot.salary}</p>
-  `;
-}
-
-// Game
 function startGame(){
-  document.getElementById("game").classList.remove("hidden");
-  updateUI();
+document.getElementById("pilotSelection").classList.add("hidden");
+document.getElementById("game").classList.remove("hidden");
+updateUI();
 }
 
 function updateUI(){
-  document.getElementById("teamName").innerText = teamName;
-  document.getElementById("money").innerText = "Dinero restante: €"+money;
-  document.getElementById("pilotInfo").innerText = "Pilotos: "+pilotsChosen.map(p=>p.name).join(", ");
-  document.getElementById("bikeInfo").innerText = "Moto: "+bikeChosen.name;
-  document.getElementById("raceNumber").innerText = "Carrera: "+race+"/"+maxRaces;
+document.getElementById("teamTitle").innerText="Equipo: "+teamName;
+document.getElementById("raceInfo").innerText=
+"Carrera "+race+" / "+circuits.length+" - "+circuits[race-1];
+document.getElementById("teamInfo").innerText=
+"Moto: "+bikeChosen.name+" | Pilotos: "+
+pilotsChosen.map(p=>p.name).join(", ");
 }
 
-const pointsTable = [25,20,16,13,11,10,9,8,7,6,5,4,3,2,1];
-
 function simulateRace(){
-  let results = [];
-  pilotsChosen.forEach(pilot=>{
-    let randomFactor = Math.floor(Math.random()*31)-15;
-    let performance = (pilot.talent*0.4) + (pilot.consistency*0.2) + (bikeChosen.power*0.3) + (bikeChosen.reliability*0.1) + randomFactor;
-    results.push({name:pilot.name, performance, isUser:true});
-  });
-  pilotsList.forEach(pilot=>{
-    if(!pilotsChosen.some(p=>p.name===pilot.name)){
-      let randomFactor = Math.floor(Math.random()*31)-15;
-      let performance = (pilot.talent*0.4) + (pilot.consistency*0.2) + (80*0.3) + (75*0.1) + randomFactor;
-      results.push({name:pilot.name, performance, isUser:false});
-    }
-  });
 
-  results.sort((a,b)=>b.performance-a.performance);
+let results=[];
 
-  let output = "";
-  results.forEach((r,i)=>{
-    let points = pointsTable[i] || 0;
-    // asignar puntos a piloto global
-    let p = pilotsList.find(pilot=>pilot.name===r.name);
-    if(p) p.points += points;
-    let mark = r.isUser ? "🔥 " : "";
-    output += (i+1)+"º "+mark+r.name+" ("+points+" pts)\n";
-  });
+pilotsList.forEach(p=>{
+let bikePower=pilotsChosen.includes(p)?bikeChosen.power:80;
+let bikeRel=pilotsChosen.includes(p)?bikeChosen.reliability:75;
 
-  document.getElementById("result").innerText = output;
-  race++;
-  if(race>maxRaces){alert("Temporada finalizada!"); race=1;}
-  updateUI();
+let random=(Math.random()*30)-15;
+
+let performance=
+(p.talent*0.5)+(p.consistency*0.3)+
+(bikePower*0.15)+(bikeRel*0.05)+random;
+
+results.push({name:p.name,performance});
+});
+
+results.sort((a,b)=>b.performance-a.performance);
+
+let output="";
+results.forEach((r,i)=>{
+let pts=pointsTable[i]||0;
+let pilot=pilotsList.find(p=>p.name===r.name);
+pilot.points+=pts;
+let mark=pilotsChosen.some(p=>p.name===r.name)?"🔥 ":"";
+output+=(i+1)+"º "+mark+r.name+" - "+pts+" pts\n";
+});
+
+document.getElementById("results").innerText=output;
+
+race++;
+if(race>circuits.length){
+alert("🏆 Temporada Finalizada");
+race=1;
+}
+updateUI();
 }
 
 function showChampionship(){
-  let standings = [...pilotsList].sort((a,b)=>b.points-a.points);
-  let output = "🏆 Clasificación Campeonato 🏆\n";
-  standings.forEach((p,i)=> output += (i+1)+"º "+(pilotsChosen.some(u=>u.name===p.name)?"🔥 ":"")+p.name+" "+p.points+" pts\n");
-  alert(output);
+let sorted=[...pilotsList].sort((a,b)=>b.points-a.points);
+let text="🏆 CLASIFICACIÓN GENERAL 🏆\n\n";
+sorted.forEach((p,i)=>{
+let mark=pilotsChosen.some(u=>u.name===p.name)?"🔥 ":"";
+text+=(i+1)+"º "+mark+p.name+" - "+p.points+" pts\n";
+});
+alert(text);
 }
+
 </script>
 </body>
 </html>
